@@ -9,15 +9,10 @@
         background: #121212;
         color: #eee;
         text-align: center;
-        /* background-image: url(bg.png); */
-        /* background-repeat: no-repeat;
-        background-position: center top;
-        background-size: 100% 100%; */
         height: 100vh;
         align-content: center;
         justify-content: center;
         overflow: hidden;
-        /* background-size: contain; */
       }
       .grid {
         display: grid;
@@ -34,7 +29,7 @@
         width: 100px;
         height: 90px;
         background: #1e1e1e;
-        border: 1px solid #333;
+        border: 2px solid #333;
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -43,7 +38,7 @@
         position: relative;
         overflow: visible;
         color: #aaa;
-        transition: opacity 0.3s;
+        transition: opacity 0.3s, border 0.3s;
       }
       .card.transparent {
         opacity: 0;
@@ -51,6 +46,9 @@
       .card img {
         max-width: 90%;
         max-height: 90%;
+      }
+      .card.matched {
+        border: 2px solid #00ff00;
       }
       .selector {
         position: fixed;
@@ -84,41 +82,14 @@
   <body>
     <div class="grid" id="grid"></div>
 
+    <audio id="matchSound" src="match.mp3" preload="auto"></audio>
+
     <script>
+      const sound = document.getElementById("matchSound");
+      sound.volume = 0.3;
+
       const grid = document.getElementById("grid");
       const totalCards = 60;
-      // const items = [
-      //   "img1/1.png",
-      //   "img1/2.png",
-      //   "img1/3.png",
-      //   "img1/4.png",
-      //   "img1/5.png",
-      //   "img1/6.png",
-      //   "img1/7.png",
-      //   "img1/8.png",
-      //   "img1/9.png",
-      //   "img1/10.png",
-      //   "img1/11.png",
-      //   "img1/12.png",
-      //   "img1/13.png",
-      //   "img1/14.png",
-      //   "img1/15.png",
-      //   "img1/16.png",
-      //   "img/17.png",
-      //   "img/18.png",
-      //   "img/19.png",
-      //   "img/20.png",
-      //   "img/21.png",
-      //   "img/22.png",
-      //   "img/23.png",
-      //   "img/24.png",
-      //   "img/25.png",
-      //   "img/26.png",
-      //   "img/27.png",
-      //   "img/28.png",
-      //   "img/29.png",
-      //   "img/30.png",
-      // ];
       const items = [
         "img/1.png",
         "img/2.png",
@@ -131,7 +102,7 @@
         "img/9.png",
         "img/10.png",
         "img/11.png",
-        "img/12.png",
+        // "img/12.png",
         "img/13.png",
         "img/14.png",
         "img/15.png",
@@ -155,7 +126,6 @@
 
       let currentSelector = null;
 
-      // создаем пустые карточки
       for (let i = 0; i < totalCards; i++) {
         const card = document.createElement("div");
         card.className = "card";
@@ -175,7 +145,6 @@
       }
 
       function showSelector(card) {
-        // убрать предыдущий селектор
         if (currentSelector) currentSelector.remove();
 
         const selector = document.createElement("div");
@@ -189,17 +158,35 @@
             const chosen = document.createElement("img");
             chosen.src = src;
             card.appendChild(chosen);
+
+            checkPairs(src, card);
+
             selector.remove();
             currentSelector = null;
           });
           selector.appendChild(img);
         });
 
-        document.body.appendChild(selector); // теперь добавляем в body
+        document.body.appendChild(selector);
         currentSelector = selector;
       }
 
-      // клик вне карточки закрывает селектор
+      function checkPairs(src, card) {
+        const cards = document.querySelectorAll(".card img");
+        const matches = [];
+
+        cards.forEach((img) => {
+          if (img.src.includes(src)) {
+            matches.push(img.parentElement);
+          }
+        });
+
+        if (matches.length >= 2) {
+          matches.forEach((c) => c.classList.add("matched"));
+          document.getElementById("matchSound").play();
+        }
+      }
+
       document.addEventListener("click", (e) => {
         if (currentSelector && !currentSelector.contains(e.target)) {
           currentSelector.remove();
