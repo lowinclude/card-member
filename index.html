@@ -2,7 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <title>Помощник для запоминания карточек</title>
+    <title>Хуйня для карточек</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -85,6 +85,18 @@
     <audio id="matchSound" src="match.mp3" preload="auto"></audio>
 
     <script>
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Tab") {
+          e.preventDefault();
+        }
+      });
+
+      document.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+      });
+
+      const matchedSrcs = new Set();
+
       const sound = document.getElementById("matchSound");
       sound.volume = 0.3;
 
@@ -172,17 +184,34 @@
       }
 
       function checkPairs(src, card) {
-        const cards = document.querySelectorAll(".card img");
-        const matches = [];
+        const allCards = document.querySelectorAll(".card");
 
-        cards.forEach((img) => {
-          if (img.src.includes(src)) {
-            matches.push(img.parentElement);
+        allCards.forEach((c) => c.classList.remove("matched"));
+
+        const sameImages = {};
+        allCards.forEach((c) => {
+          const img = c.querySelector("img");
+          if (img) {
+            const s = img.src;
+            if (!sameImages[s]) sameImages[s] = [];
+            sameImages[s].push(c);
           }
         });
 
-        if (matches.length >= 2) {
-          matches.forEach((c) => c.classList.add("matched"));
+        let newPair = false;
+
+        Object.entries(sameImages).forEach(([src, group]) => {
+          if (group.length >= 2) {
+            group.forEach((c) => c.classList.add("matched"));
+
+            if (!matchedSrcs.has(src)) {
+              matchedSrcs.add(src);
+              newPair = true;
+            }
+          }
+        });
+
+        if (newPair) {
           document.getElementById("matchSound").play();
         }
       }
